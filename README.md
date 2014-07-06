@@ -5,7 +5,7 @@ Dockerfile for JNetHack
 
 ## Howto
 
-    docker run -it matsuu/docker-jnethack
+    docker run -it matsuu/jnethack
 
 ## Build
 
