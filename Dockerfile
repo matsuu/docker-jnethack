@@ -20,9 +20,15 @@ RUN tar zxf nethack-343-src.tgz && \
   sed -i -e "/rmdir \.\/-p/d" sys/unix/Makefile.top && \
   sed -i -e "/# define XI18N/d" include/config.h && \
   sed -i -e "/XI18N/i #include <locale.h>" sys/unix/unixmain.c && \ 
-  sed -i -e "s:/\* \(#define LINUX\) \*/:\1:" include/unixconf.h && \
+  sed -i -e "s:/\* \(#define\s*\(SYSV\|LINUX\|TERMINFO\|TIMED_DELAY\)\)\s*\*/:\1:" include/unixconf.h && \
   make all && \
-  make install
+  make install && \
+  cd .. && \
+  rm -rf \
+    nethack-3.4.3 \
+    nethack-343-src.tgz \
+    jnethack-3.4.3-0.11.diff.gz \
+    jnethack-3.4.3-0.10-utf8-2.patch.bz2
 
 ENV LANG ja_JP.UTF-8
 
