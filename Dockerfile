@@ -1,38 +1,26 @@
-FROM centos
+FROM centos:7
 
-RUN yum install -y bison bzip2 flex gcc glibc-headers make ncurses-devel patch tar wget
+ARG NH_VER=3.6.0
+ARG JNH_VER=3.6.0-0.9
 
-# for locale issue
-RUN yum reinstall -y glibc glibc-common
-RUN localedef -f UTF-8 -i ja_JP ja_JP.UTF-8
-
-RUN wget \
-  http://sourceforge.net/projects/nethack/files/nethack/3.4.3/nethack-343-src.tgz \
-  http://jaist.dl.sourceforge.jp/jnethack/58545/jnethack-3.4.3-0.11.diff.gz \
-  http://elbereth.up.seesaa.net/nethack/jnethack-3.4.3-0.10-utf8-2.patch.bz2
-
-RUN tar zxf nethack-343-src.tgz && \
-  cd nethack-3.4.3 && \
-  gzip -dc ../jnethack-3.4.3-0.11.diff.gz | patch -p1 && \
-  bzip2 -dc ../jnethack-3.4.3-0.10-utf8-2.patch.bz2 | patch -p1 && \
-  sh sys/unix/setup.sh x && \
-  sed -i -e "/^CFLAGS/s/-O/-O2 -fomit-frame-pointer/" sys/unix/Makefile.{src,utl} && \
-  sed -i -e "/rmdir \.\/-p/d" sys/unix/Makefile.top && \
-  sed -i -e "/# define XI18N/d" include/config.h && \
-  sed -i -e "/XI18N/i #include <locale.h>" sys/unix/unixmain.c && \ 
-  sed -i -e "s:/\* \(#define\s*\(SYSV\|LINUX\|TERMINFO\|TIMED_DELAY\)\)\s*\*/:\1:" include/unixconf.h && \
+RUN \
+  yum install -y byacc curl flex gcc glibc-headers groff-base make ncurses-devel patch tar && \
+  yum reinstall -y glibc glibc-common && \
+  localedef -f UTF-8 -i ja_JP ja_JP.UTF-8 && \
+  curl -sL http://www.nethack.org/download/${NH_VER}/nethack-${NH_VER//.}-src.tgz | tar zxf - && \
+  cd nethack-${NH_VER} && \
+  curl -sL https://ja.osdn.net/dl/jnethack/jnethack-${JNH_VER}.diff.gz | zcat | iconv -f cp932 -t euc-jp-ms | patch -p1 && \
+  sed -i -e 's/cp -n/cp/g' -e '/^PREFIX/s:=.*:=/usr:' sys/unix/hints/linux && \
+  sh sys/unix/setup.sh sys/unix/hints/linux && \
   make all && \
   make install && \
   cd .. && \
-  rm -rf \
-    nethack-3.4.3 \
-    nethack-343-src.tgz \
-    jnethack-3.4.3-0.11.diff.gz \
-    jnethack-3.4.3-0.10-utf8-2.patch.bz2
+  rm -rf nethack-${NH_VER}
 
 ENV LANG ja_JP.UTF-8
+ENV NETHACKOPTIONS kcode:u
 
 # for backup
 VOLUME /usr/games/lib/jnethackdir
 
-CMD ["/usr/games/jnethack"]
+ENTRYPOINT ["/usr/games/jnethack"]
