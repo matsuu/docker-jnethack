@@ -1,20 +1,20 @@
-FROM centos:7
+FROM alpine
 
 ARG NH_VER=3.6.0
 ARG JNH_VER=3.6.0-0.9
 
 RUN \
-  yum install -y byacc curl flex gcc glibc-headers groff-base make ncurses-devel patch tar && \
-  yum reinstall -y glibc glibc-common && \
-  localedef -f UTF-8 -i ja_JP ja_JP.UTF-8 && \
+  apk --no-cache add byacc curl flex gcc groff linux-headers make musl-dev ncurses-dev util-linux && \
+  apk --no-cache --repository http://dl-cdn.alpinelinux.org/alpine/edge/testing add gnu-libiconv && \
   curl -sL http://www.nethack.org/download/${NH_VER}/nethack-${NH_VER//.}-src.tgz | tar zxf - && \
-  cd nethack-${NH_VER} && \
-  curl -sL https://ja.osdn.net/dl/jnethack/jnethack-${JNH_VER}.diff.gz | zcat | iconv -f cp932 -t euc-jp-ms | patch -p1 && \
-  sed -i -e 's/cp -n/cp/g' -e '/^PREFIX/s:=.*:=/usr:' sys/unix/hints/linux && \
-  sh sys/unix/setup.sh sys/unix/hints/linux && \
-  make all && \
-  make install && \
-  cd .. && \
+  ( \
+    cd nethack-${NH_VER} && \
+    curl -sL https://ja.osdn.net/dl/jnethack/jnethack-${JNH_VER}.diff.gz | zcat | gnu-iconv -f cp932 -t euc-jp | patch -p2 && \
+    sed -i -e 's/cp -n/cp/g' -e '/^PREFIX/s:=.*:=/usr:' sys/unix/hints/linux && \
+    sh sys/unix/setup.sh sys/unix/hints/linux && \
+    make all && \
+    make install \
+  ) && \
   rm -rf nethack-${NH_VER}
 
 ENV LANG ja_JP.UTF-8
