@@ -1,7 +1,7 @@
 FROM alpine
 
-ARG NH_VER=3.6.0
-ARG JNH_VER=3.6.0-0.9
+ARG NH_VER=3.6.1
+ARG JNH_VER=3.6.1-0.1
 
 RUN \
   apk --no-cache add byacc curl flex gcc groff linux-headers make musl-dev ncurses-dev util-linux && \
