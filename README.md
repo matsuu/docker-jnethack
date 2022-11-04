@@ -13,7 +13,7 @@ Dockerfile for JNetHack
 
 ## References
 
-- [NetHack 3.4.3: Home Page](http://www.nethack.org/)
+- [NetHack](http://www.nethack.org/)
 - [JNetHack Home Page](http://www.jnethack.org/)
 - [JNetHack Project](http://jnethack.sourceforge.jp/)
 - [Compiling - Wikihack](http://nethack.wikia.com/wiki/Compiling)
