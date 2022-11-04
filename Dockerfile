@@ -1,23 +1,27 @@
 FROM alpine
 
-ARG NH_VER=3.6.1
-ARG JNH_VER=3.6.1-0.1
+ARG NH_VER=3.6.6
+ARG JNH_VER=3.6.6-0.6
 
 RUN \
-  apk --no-cache add byacc curl flex gcc groff linux-headers make musl-dev ncurses-dev util-linux && \
-  apk --no-cache --repository http://dl-cdn.alpinelinux.org/alpine/edge/testing add gnu-libiconv && \
-  curl -sL http://www.nethack.org/download/${NH_VER}/nethack-${NH_VER//.}-src.tgz | tar zxf - && \
+  apk update && \
+  apk upgrade && \
+  apk add musl-locales ncurses && \
+  apk add --virtual .build byacc curl flex gcc groff gnu-libiconv linux-headers make musl-dev ncurses-dev patch util-linux && \
+  ln -s libncurses.so /usr/lib/libtinfo.so && \
+  curl -sL https://nethack.org/download/${NH_VER}/nethack-${NH_VER//.}-src.tgz | tar zx && \
   ( \
-    cd nethack-${NH_VER} && \
-    curl -sL https://ja.osdn.net/dl/jnethack/jnethack-${JNH_VER}.diff.gz | zcat | gnu-iconv -f cp932 -t euc-jp | patch -p2 && \
+    cd NetHack-NetHack-${NH_VER}_Released && \
+    curl -sL https://ja.osdn.net/dl/jnethack/jnethack-${JNH_VER}.diff.gz | gzip -dc | gnu-iconv -f cp932 -t euc-jp -c | patch -p1 && \
     sed -i -e 's/cp -n/cp/g' -e '/^PREFIX/s:=.*:=/usr:' sys/unix/hints/linux && \
     sh sys/unix/setup.sh sys/unix/hints/linux && \
     make all && \
     make install \
   ) && \
-  rm -rf nethack-${NH_VER}
+  rm -rf NetHack-NetHack-${NH_VER}_Released && \
+  apk del --purge .build
 
-ENV LANG ja_JP.UTF-8
+ENV LANG en_US.UTF-8
 ENV NETHACKOPTIONS kcode:u
 
 # for backup
